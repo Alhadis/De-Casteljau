@@ -40,7 +40,7 @@ body{
 	overflow: visible;
 }
 
-#ball{
+.ball{
 	position: absolute;
 	font-size: 2em;
 	width:	1em;
@@ -48,10 +48,18 @@ body{
 	background: #f00;
 	margin: -.5em 0 0 -.5em;
 	top:	0%;
-	left:	50%;
+	left:	40%;
 	border-radius: 50%;
-	box-shadow: inset -.125em -.125em .5em rgba(55,0,0,.65);
+	box-shadow: inset -.125em -.125em .5em rgba(0,0,0,.55);
 }
+	.ball + .ball{
+		transition: 4s top cubic-bezier(0,.76,.01,1);
+		background-color: #0d0;
+		left: 60%;
+	}
+	.ball.drop{
+		top: 100%;
+	}
 
 </style>
 </head>
@@ -59,10 +67,12 @@ body{
 
 <body>
 	
-	<div id="ball"></div>
+	<div class="ball"></div>
+	<div class="ball"></div>
 
 
 	<script type="application/javascript">
+		"use strict";
 
 		function percent(value, outOf, startAt){
 			var startAt	=	(startAt == undefined) ? 0 : startAt;
@@ -100,33 +110,42 @@ body{
 
 
 
-		var progress	=	0;
 		var points		=	[
-			[0, 0],
-			[.05, .62],
-			[.17, .95],
-			[1, 1]
+			[0,		0],
+			[0,		0.76],
+			[0.01,	1],
+			[1,		1]
 		];
 
+		var output	=	"";
 
-		var target	=	document.getElementById("ball"),
+		var balls	=	document.getElementsByClassName("ball"),
+			target	=	balls[0],
 			style	=	target.style,
 
 			from		=	0,
 			to			=	100,
 
+			/** Experimental shit */
+			duration	=	2000,
+			fps			=	60,
+
+			delay		=	1 / fps * 1000,
+
 
 			callback	=	function(){
 				console.log("Done!");
-				timeFinished	=	Date.now();
+				timeFinished	=	performance.now();
 				console.log("Time in milliseconds: " + (timeFinished - timeStarted));
 			};
 
 
+		var step	=	function(progress, iterations){
 
-		var step	=	function(progress){
-			var	midpoint		=	deCasteljau(points, progress),
-				value			=	midpoint[0][1] * (to - from);
+			var	midpoint	=	deCasteljau(points, progress),
+				value		=	midpoint[0][1] * (to - from);
+				output		+=	progress + "\t" + value + "\n";
+				
 
 				if(from < to && value >= to){
 					target.style.top	=	to + "%";
@@ -135,16 +154,22 @@ body{
 
 				else{
 					target.style.top	=	value + "%";
+
 					setTimeout(function(){
-						step(progress + 0.01);
-					}, 10);
+						step(delay * iterations / duration, ++iterations);
+					}, delay);
 				}
 		};
 
-		var timeStarted	=	Date.now(),
-			timeFinished;
 
-		step(0);
+		var timeStarted, timeFinished;
+
+		function go(){
+			timeStarted	=	performance.now();
+			balls[1].style.transitionDuration = duration + "ms";
+			balls[1].classList.add("drop");
+			step(0, 0);
+		}
 	</script>
 </body>
 </html>
