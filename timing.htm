@@ -53,7 +53,7 @@ body{
 	box-shadow: inset -.125em -.125em .5em rgba(0,0,0,.55);
 }
 	.ball + .ball{
-		transition: 4s top cubic-bezier(0,.76,.01,1);
+		transition: 4s top cubic-bezier(0,.98,1,0);
 		background-color: #0d0;
 		left: 60%;
 	}
@@ -112,13 +112,13 @@ body{
 
 		var points		=	[
 			[0,		0],
-			[0,		0.76],
-			[0.01,	1],
+			[0,		0.98],
+			[1,		0],
 			[1,		1]
 		];
 
-		var output	=	"";
 
+		var output	=	[];
 		var balls	=	document.getElementsByClassName("ball"),
 			target	=	balls[0],
 			style	=	target.style,
@@ -135,6 +135,7 @@ body{
 
 			callback	=	function(){
 				console.log("Done!");
+				output			=	JSON.stringify(output);
 				timeFinished	=	performance.now();
 				console.log("Time in milliseconds: " + (timeFinished - timeStarted));
 			};
@@ -144,13 +145,16 @@ body{
 
 			var	midpoint	=	deCasteljau(points, progress),
 				value		=	midpoint[0][1] * (to - from);
-				output		+=	progress + "\t" + value + "\n";
-				
+
+				/** Add calculated value to our plot of logged data. */
+				output.push([progress, value]);
+
 
 				if(from < to && value >= to){
 					target.style.top	=	to + "%";
 					callback();
 				}
+
 
 				else{
 					target.style.top	=	value + "%";
@@ -165,9 +169,15 @@ body{
 		var timeStarted, timeFinished;
 
 		function go(){
+			output		=	[];
 			timeStarted	=	performance.now();
-			balls[1].style.transitionDuration = duration + "ms";
+
+			/** Mirror the current tweening parameters on the ball using the CSS-controlled transition. */
+			balls[1].style.transitionDuration		=	duration + "ms";
+			balls[1].style.transitionTimingFunction	=	"cubic-bezier(" + points.slice(1,3).join(",") + ")";
 			balls[1].classList.add("drop");
+
+			/** Get the ball rolling (hurr). */
 			step(0, 0);
 		}
 	</script>
