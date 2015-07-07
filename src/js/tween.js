@@ -86,8 +86,18 @@
 				step(0, 0);
 		};
 
-		/** Static properties */
-		Tween.LINEAR	=	[[0, 0], [1, 1]];
+
+		/** Define some preset easing functions */
+		var START		=	[0, 0],
+			END			=	[1, 1],
+			EASE_START	=	[.42, 0],
+			EASE_END	=	[.58, 1];
+
+		Tween.LINEAR		=	[START, END];
+		Tween.EASE			=	[START,		[.25, .1],	[.25, 1],	END];
+		Tween.EASE_IN		=	[START,		EASE_START,	END,		END];
+		Tween.EASE_IN_OUT	=	[START,		EASE_START,	EASE_END,	END];
+		Tween.EASE_OUT		=	[START,		START,		EASE_END,	END];
 
 
 	/** Export */
