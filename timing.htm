@@ -71,109 +71,27 @@ body{
 	<div class="ball"></div>
 
 
+	<script type="application/javascript" src="src/js/tween.js"></script>
 	<script type="application/javascript">
 		"use strict";
 
-		function percent(value, outOf, startAt){
-			var startAt	=	(startAt == undefined) ? 0 : startAt;
-			return ((value-startAt) / (outOf-startAt)) * 100;
-		}
 
-		function percentOf(percentage, outOf, startAt){
-			return ((percentage / 100) * (outOf - ((startAt == undefined) ? 0 : startAt)));
-		}
-
-
-		/** Applies De Casteljau's algorithm to an array of points to ascertain the final midpoint. */
-		function deCasteljau(points, p){
-			var a, b, i, p	=	p || .5,
-				midpoints	=	[];
-
-			while(points.length > 1){
-
-				for(i = 0; i < points.length - 1; ++i){
-					a	=	points[i];
-					b	=	points[i+1];
-
-					midpoints.push([
-						a[0] + ((b[0] - a[0]) * p),
-						a[1] + ((b[1] - a[1]) * p)
-					]);
-				}
-
-				points		=	midpoints;
-				midpoints	=	[];
-			}
-
-			return [points[0], a, b];
-		}
-
-
-
-		var points		=	[
-			[0,		0],
-			[0,		0.98],
-			[1,		0],
-			[1,		1]
-		];
-
-
-		var output		=	[];
 		var balls		=	document.getElementsByClassName("ball"),
 			target		=	balls[0].style,
-			property	=	"top",
-
-			from		=	20,
-			to			=	80,
-			suffix		=	"%",
-
-			/** Experimental shit */
+			dataPlot	=	[],
 			duration	=	2000,
-			fps			=	60,
+			timeStarted,
+			timeFinished,
+			points		=	[
+				[0,		0],
+				[0,		0.98],
+				[1,		0],
+				[1,		1]
+			];
 
-			delay		=	1 / fps * 1000,
-
-
-			callback	=	function(){
-				console.log("Done!");
-				output			=	JSON.stringify(output);
-				timeFinished	=	performance.now();
-				console.log("Time in milliseconds: " + (timeFinished - timeStarted));
-			};
-
-
-		var step	=	function(progress, iterations){
-
-			var	midpoint	=	deCasteljau(points, progress),
-				value		=	midpoint[0][1];
-
-
-				/** Add calculated value to our plot of logged data. */
-				output.push([progress, value]);
-
-
-				/** Detect when the tween's finished. */
-				if(value >= 1){
-					target[property]	=	to + suffix;
-					callback();
-				}
-
-
-				else{
-					if(progress)
-						target[property]	=	from + ((to - from) * value) + suffix;
-
-					setTimeout(function(){
-						step(delay * iterations / duration, ++iterations);
-					}, delay);
-				}
-		};
-
-
-		var timeStarted, timeFinished;
 
 		function go(){
-			output		=	[];
+			dataPlot	=	dataPlot.length ? [] : dataPlot;
 			timeStarted	=	performance.now();
 
 			/** Mirror the current tweening parameters on the ball using the CSS-controlled transition. */
@@ -181,9 +99,36 @@ body{
 			balls[1].style.transitionTimingFunction	=	"cubic-bezier(" + points.slice(1,3).join(",") + ")";
 			balls[1].classList.add("drop");
 
+
+
 			/** Get the ball rolling (hurr). */
-			step(0, 0);
+			new Tween({
+				target:		balls[0].style,
+				property:	"top",
+				curve:		points,
+
+				from:		20,
+				to:			80,
+				suffix:		"%",
+				duration:	duration,
+
+
+				/** Add calculated value to our plot of logged data */
+				onStep:		function(progress, value){
+					dataPlot.push([progress, value]);
+				},
+
+
+				/** Callback executed when finished */
+				onDone:		function(){
+					console.log("Done!");
+					dataPlot		=	JSON.stringify(dataPlot);
+					timeFinished	=	performance.now();
+					console.log("Time in milliseconds: " + (timeFinished - timeStarted));
+				}
+			});
 		}
+
 	</script>
 </body>
 </html>
