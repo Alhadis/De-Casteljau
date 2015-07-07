@@ -47,7 +47,7 @@ body{
 	height:	1em;
 	background: #f00;
 	margin: -.5em 0 0 -.5em;
-	top:	0%;
+	top:	20%;
 	left:	40%;
 	border-radius: 50%;
 	box-shadow: inset -.125em -.125em .5em rgba(0,0,0,.55);
@@ -58,7 +58,7 @@ body{
 		left: 60%;
 	}
 	.ball.drop{
-		top: 100%;
+		top: 80%;
 	}
 
 </style>
@@ -118,13 +118,14 @@ body{
 		];
 
 
-		var output	=	[];
-		var balls	=	document.getElementsByClassName("ball"),
-			target	=	balls[0],
-			style	=	target.style,
+		var output		=	[];
+		var balls		=	document.getElementsByClassName("ball"),
+			target		=	balls[0].style,
+			property	=	"top",
 
-			from		=	0,
-			to			=	100,
+			from		=	20,
+			to			=	80,
+			suffix		=	"%",
 
 			/** Experimental shit */
 			duration	=	2000,
@@ -144,20 +145,23 @@ body{
 		var step	=	function(progress, iterations){
 
 			var	midpoint	=	deCasteljau(points, progress),
-				value		=	midpoint[0][1] * (to - from);
+				value		=	midpoint[0][1];
+
 
 				/** Add calculated value to our plot of logged data. */
 				output.push([progress, value]);
 
 
-				if(from < to && value >= to){
-					target.style.top	=	to + "%";
+				/** Detect when the tween's finished. */
+				if(value >= 1){
+					target[property]	=	to + suffix;
 					callback();
 				}
 
 
 				else{
-					target.style.top	=	value + "%";
+					if(progress)
+						target[property]	=	from + ((to - from) * value) + suffix;
 
 					setTimeout(function(){
 						step(delay * iterations / duration, ++iterations);
